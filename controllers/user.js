@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const secret = process.env.SECRET
 const prisma = require('../utils/prismaGeneratorExPassword')
+const { PrismaClient } = require('@prisma/client')
+const prismaWithPassword = new PrismaClient()
 
 const addUser = async (req, res, next) => {
     try {
@@ -34,7 +36,7 @@ const login = async (req, res, next) => {
     try {
         const { email, password } = req.body
         if (!email || !password) throw new AppError('missing credentials', 400)
-        const user = await prisma.user.findUnique({ where: { email } })
+        const user = await prismaWithPassword.user.findUnique({ where: { email } })
         if (!user) throw new AppError('invalid credientials', 404)
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) throw new AppError('invalid credientials', 404)
@@ -62,6 +64,57 @@ const getUserData = async (req, res, next) => {
     }
 }
 
+const deleteMyAccount = async (req, res, next) => {
+    try {
+        if (req.user.role === 'SuperAdmin') throw new AppError('SuperAdmin account can not be deleted', 401)
+        await prisma.user.delete({ where: { id: req.user.id } })
+        res.json('user has been deleted successfully')
+    }
+    catch (error) {
+        next(error)
+    }
+}
+
+const deleteUserAccount = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'SuperAdmin') throw new AppError('unAuthorized', 401)
+        const { id } = req.params
+        const user = await prisma.user.findUnique({ where: { id } })
+        if (user.role === 'SuperAdmin') throw new AppError('SuperAdmin account can not be deleted', 401)
+        await prisma.user.delete({ where: { id } })
+        res.json('user has been deleted successfully')
+    }
+    catch (error) {
+        next(error)
+    }
+}
+
+const makeAdmin = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'SuperAdmin') throw new AppError('unAuthorized', 401)
+        const { id } = req.params
+        if (id === req.user.id) throw new AppError('can not change the SuperAdmin role', 401)
+        await prisma.user.update({ where: { id }, data: { role: 'Admin' } })
+        res.json('role changed successfully to admin')
+    }
+    catch (error) {
+        next(error)
+    }
+}
+
+const makeUser = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'SuperAdmin') throw new AppError('unAuthorized', 401)
+        const { id } = req.params
+        if (id === req.user.id) throw new AppError('can not change the SuperAdmin role', 401)
+        await prisma.user.update({ where: { id }, data: { role: 'User' } })
+        res.json('role changed successfully to user')
+    }
+    catch (error) {
+        next(error)
+    }
+}
+
 module.exports = {
-    addUser, login, getMyData, getUserData
+    addUser, login, getMyData, getUserData, deleteMyAccount, deleteUserAccount, makeAdmin, makeUser
 }

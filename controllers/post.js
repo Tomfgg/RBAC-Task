@@ -24,9 +24,23 @@ const getMyPosts = async (req, res, next) => {
 }
 
 const getUserPosts = async (req, res, next) => {
-    const {id} = req.params
+    const { id } = req.params
     const posts = await prisma.post.findMany({ where: { userId: id } })
     res.json(posts)
 }
 
-module.exports = { addPost, getPosts, getMyPosts, getUserPosts }
+const deletePost = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const post = await prisma.post.findUnique({ where: { id } })
+        if (!post) throw new AppError('post not found', 404)
+        if (req.user.id !== post.userId && req.user.role !== 'Admin' && req.user.role !== 'SuperAdmin') throw new AppError('unAuthorized', 401)
+        await prisma.post.delete({where:{id}})
+        res.json('user successfully deleted')
+    }
+    catch (error) {
+        next(error)
+    }
+}
+
+module.exports = { addPost, getPosts, getMyPosts, getUserPosts, deletePost }
