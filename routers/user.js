@@ -1,12 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const { addUser, login, getMyData, getUserData, deleteMyAccount, deleteUserAccount, makeAdmin, makeUser, getAllUsers } = require('../controllers/user')
+const { addUser, login, getMyData, deleteMyAccount, deleteUserAccount, makeAdmin, makeUser, getAllUsers } = require('../controllers/user')
 const userVerification = require('../utils/userVerification')
 
 
 router.post('/', addUser)
 router.post('/login', login)
-// router.get('/:id', getUserData)
 
 router.use(userVerification)
 

@@ -52,17 +52,6 @@ const getMyData = async (req, res, next) => {
     res.json(req.user)
 }
 
-const getUserData = async (req, res, next) => {
-    try {
-        const { id } = req.params
-        const user = await prisma.user.findUnique({ where: { id } })
-        if (!user) throw new AppError('user not found', 404)
-        res.json(user)
-    }
-    catch (error) {
-        next(error)
-    }
-}
 
 const deleteMyAccount = async (req, res, next) => {
     try {
@@ -127,5 +116,5 @@ const getAllUsers = async (req, res, next) => {
 }
 
 module.exports = {
-    addUser, login, getMyData, getUserData, deleteMyAccount, deleteUserAccount, makeAdmin, makeUser, getAllUsers
+    addUser, login, getMyData, deleteMyAccount, deleteUserAccount, makeAdmin, makeUser, getAllUsers
 }

@@ -14,18 +14,11 @@ const addPost = async (req, res, next) => {
 }
 
 const getPosts = async (req, res, next) => {
-    const posts = await prisma.post.findMany({ include: { user: true } })
-    res.json(posts)
-}
-
-const getMyPosts = async (req, res, next) => {
-    const posts = await prisma.post.findMany({ where: { userId: req.user.id } })
-    res.json(posts)
-}
-
-const getUserPosts = async (req, res, next) => {
-    const { id } = req.params
-    const posts = await prisma.post.findMany({ where: { userId: id } })
+    const posts = await prisma.post.findMany({
+        include: { user: true }, 
+        orderBy: {
+            createdAt: 'desc', 
+        }, })
     res.json(posts)
 }
 
@@ -43,4 +36,4 @@ const deletePost = async (req, res, next) => {
     }
 }
 
-module.exports = { addPost, getPosts, getMyPosts, getUserPosts, deletePost }
+module.exports = { addPost, getPosts, deletePost }
