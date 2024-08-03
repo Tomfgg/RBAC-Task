@@ -1,11 +1,16 @@
 const express = require('express')
 const app = express()
 const port = 5000
-app.use(express.json())
 const {PrismaClient} = require('@prisma/client')
 const userRoutes = require('./routers/user')
 const postRoutes = require('./routers/post')
+const cors = require('cors')
 const prisma = new PrismaClient()
+
+app.use(cors())
+
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/users', userRoutes)
 app.use('/posts', postRoutes)

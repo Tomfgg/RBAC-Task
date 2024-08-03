@@ -16,7 +16,7 @@ const userVerification = async (req, res, next) => {
             }
             const { id } = decode
             const user = await prisma.user.findUnique({where:{id}})
-            if (!user) { return res.json("user not found") }
+            if (!user)  throw new AppError("user not found",404) 
             req.user = user
             next()
         }
